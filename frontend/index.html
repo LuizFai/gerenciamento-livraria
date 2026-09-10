@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerenciamento de Livraria</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 20px; text-align: center; }
+        .container { max-width: 500px; background: white; padding: 20px; margin: auto; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input, button { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #28a745; color: white; border: none; cursor: pointer; }
+        button:hover { background: #218838; }
+        #lista-livros { margin-top: 20px; text-align: left; }
+        .livro-item { background: #eee; padding: 10px; margin: 5px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Cadastrar Livro</h2>
+        <form id="form-livro">
+            <input type="text" id="titulo" placeholder="Título do Livro" required>
+            <input type="text" id="autor" placeholder="Autor" required>
+            <input type="number" id="preco" step="0.01" placeholder="Preço" required>
+            <button type="submit">Salvar Livro</button>
+        </form>
+
+        <h2>Livros em Estoque</h2>
+        <div id="lista-livros"></div>
+    </div>
+
+    <script>
+        // Enviar dados para o backend PHP
+        document.getElementById('form-livro').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const dados = {
+                titulo: document.getElementById('titulo').value,
+                autor: document.getElementById('autor').value,
+                preco: document.getElementById('preco').value
+            };
+
+            fetch('../backend/salvar.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.mensagem);
+                carregarLivros();
+                document.getElementById('form-livro').reset();
+            });
+        });
+
+        // Carregar livros do backend PHP
+        function carregarLivros() {
+            fetch('../backend/listar.php')
+            .then(res => res.json())
+            .then(livros => {
+                const lista = document.getElementById('lista-livros');
+                lista.innerHTML = '';
+                livros.forEach(livro => {
+                    lista.innerHTML += `<div class="livro-item"><strong>${livro.titulo}</strong> - ${livro.autor} (R$ ${livro.preco})</div>`;
+                });
+            });
+        }
+        carregarLivros();
+    </script>
+</body>
+</html>
